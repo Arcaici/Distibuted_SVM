@@ -35,6 +35,8 @@ class CentralizedSVM():
 
         # Cost function and variables
         A = np.hstack((x_train * y_train_reshaped.T, y_train_reshaped.T))
+        print(A)
+        print(type(A))
         C = np.identity(n + 1)
         C[n, n] = 0
         x_v = cp.Variable((n + 1, 1))
@@ -47,7 +49,7 @@ class CentralizedSVM():
         self.w_c = x_v.value[:n]
         self.b_c = x_v.value[-1]
 
-        print("#________ DONE TRAIN ________#")
+        print("#________ DONE TRAIN Centralized________#")
 
     def predict(self, x_test, y_test):
 
@@ -63,9 +65,12 @@ class CentralizedSVM():
 
 
     def metrics(self):
-        print("Accuracy:", self.accuracy)
-        print("AUC:", self.roc_auc)
 
+        #Accuracy
+        print("Accuracy (Centralized):", self.accuracy)
+
+        # ROC and AUC
+        print("AUC (Centralized):", self.roc_auc)
         plt.figure()
         plt.plot(self.fpr, self.tpr, color='blue', lw=2)
         plt.xlabel('False Positive Rate')
@@ -73,25 +78,11 @@ class CentralizedSVM():
         plt.title('ROC Curve SVM Centralized')
         plt.show()
 
+        # Confusion Matrix
         plt.figure(figsize=(8, 6))
         sns.heatmap(self.cm, annot=True, cmap='Blues', fmt='g', cbar=False)
-
-        # Add labels and title
         plt.xlabel('Predicted')
         plt.ylabel('True')
-        plt.title('Confusion Matrix')
+        plt.title('Confusion Matrix (Centralized)')
         plt.show()
 
-# Read the clean dataset
-df = pd.read_csv('Datasets/your_dataset.csv')
-
-# Split the dataset into training and test sets
-y = df.iloc[:, 0]
-x = df.iloc[:, 1:].values
-
-x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
-
-svm = CentralizedSVM()
-svm.train(x_train, y_train)
-svm.predict(x_test, y_test)
-svm.metrics()

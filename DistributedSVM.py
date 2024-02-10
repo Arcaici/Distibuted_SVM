@@ -56,9 +56,8 @@ class DistributedSVM():
                 reg = cp.sum_squares(x_cp - Z[k, :] + U[k, i, :])
                 aug_lagr = loss / m + (self.rho / 2) * reg
                 prob = cp.Problem(cp.Minimize(aug_lagr))
-                prob.solve(solver=cp.ECOS)  # , verbose=True
+                prob.solve(solver=cp.ECOS, verbose=True)
                 X[k + 1, i, :] = x_cp.value
-                # LOSS computation
                 for j in range(n_samples):
                     cost = 1 - np.inner(A[count + j, :], X[k + 1, i, :])
                     if cost > 0:
@@ -83,7 +82,7 @@ class DistributedSVM():
                     Z[k + 1, i] = mean_X[i] + mean_U[i] + self.lambda_val / (self.N * self.rho)
                 else:
                     Z[k + 1, i] = 0
-            Z[k + 1, n] = mean_X[n] + mean_U[n]  # l'ultima è un caso particolare
+            Z[k + 1, n] = mean_X[n] + mean_U[n]
 
             # Step 3
             for i in range(self.N):
@@ -97,7 +96,7 @@ class DistributedSVM():
             dk = np.sum(np.square(P))
             self.D = np.append(self.D, dk)
 
-        print("#________ DONE TRAIN ________#")
+        print("#________ DONE TRAIN Distributed________#")
         self.w_c = X[self.n_iter-1,1,:n]
         self.b_c = X[self.n_iter-1,1,-1]
 
@@ -117,15 +116,15 @@ class DistributedSVM():
     def test_metrics(self):
         
         # Accuracy of last iteration
-        print("Accuracy:", self.accuracy)
+        print("Accuracy (Distributed):", self.accuracy)
         
         # ROC and AUC of last iteration
-        print("AUC:", self.roc_auc)
+        print("AUC (Distributed):", self.roc_auc)
         plt.figure()
         plt.plot(self.fpr, self.tpr, color='blue', lw=2)
         plt.xlabel('False Positive Rate')
         plt.ylabel('True Positive Rate')
-        plt.title('ROC Curve SVM Centralized')
+        plt.title('ROC Curve SVM Distributed')
         plt.show()
 
         # Confution Matrix of last iteration 
@@ -133,7 +132,7 @@ class DistributedSVM():
         sns.heatmap(self.cm, annot=True, cmap='Blues', fmt='g', cbar=False)
         plt.xlabel('Predicted')
         plt.ylabel('True')
-        plt.title('Confusion Matrix')
+        plt.title('Confusion Matrix (Distributed)')
         plt.show()
 
 
@@ -151,17 +150,3 @@ class DistributedSVM():
         plt.ylabel('Disagreement')
         plt.title(f"Iterations = {self.n_iter} | Processor = {self.N} | rho = {self.rho}")
         plt.show()
-# Read the clean dataset
-df = pd.read_csv('Datasets/dataset_clean.csv')
-
-# Split the dataset into training and test sets
-y = df.iloc[:, 0]
-x = df.iloc[:, 1:].values
-
-x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
-
-svm = DistributedSVM()
-svm.train(x_train, y_train)
-svm.predict(x_test, y_test)
-svm.test_metrics()
-svm.trend_metrics()
