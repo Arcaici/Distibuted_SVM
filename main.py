@@ -20,14 +20,14 @@ y = df['Quality']
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 
 # Centralized SVM execution
-svm_cen = CentralizedSVM()
-svm_cen.train(x_train, y_train)
+svm_cen = CentralizedSVM(lambda_val=0.01, verbose=False)
+svm_cen.fit(x_train, y_train)
 svm_cen.predict(x_test, y_test)
 
 
 # Distributed SVM execution
-svm_dist = DistributedSVM()
-svm_dist.train(x_train, y_train)
+svm_dist = DistributedSVM(rho=0.01,lambda_val=0.01, verbose=False)
+svm_dist.fit(x_train, y_train)
 svm_dist.predict(x_test, y_test)
 
 # Metrics

@@ -9,13 +9,14 @@ import matplotlib.pyplot as plt
 
 class DistributedSVM():
 
-    def __init__(self,N=20, n_iter=500, rho= 1, lambda_val = 1e-2):
+    def __init__(self,N=20, n_iter=500, rho= 1, lambda_val = 1e-2, verbose = True):
 
         # param
         self.N = N
         self.n_iter = n_iter
         self.rho = rho
         self.lambda_val = lambda_val
+        self.verbose = verbose
 
         # estimated param
         self.w_c = 0
@@ -30,7 +31,7 @@ class DistributedSVM():
         self.roc_auc = 0
         self.cm = 0
 
-    def train(self, x_train, y_train):
+    def fit(self, x_train, y_train):
 
         # Params
         m = x_train.shape[0]
@@ -56,7 +57,7 @@ class DistributedSVM():
                 reg = cp.sum_squares(x_cp - Z[k, :] + U[k, i, :])
                 aug_lagr = loss / m + (self.rho / 2) * reg
                 prob = cp.Problem(cp.Minimize(aug_lagr))
-                prob.solve(solver=cp.ECOS, verbose=True)
+                prob.solve(solver=cp.ECOS, verbose=self.verbose)
                 X[k + 1, i, :] = x_cp.value
                 for j in range(n_samples):
                     cost = 1 - np.inner(A[count + j, :], X[k + 1, i, :])

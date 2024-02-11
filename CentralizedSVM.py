@@ -9,10 +9,11 @@ import matplotlib.pyplot as plt
 
 class CentralizedSVM():
 
-    def __init__(self, lambda_val = 1e-2):
+    def __init__(self, lambda_val = 1e-2, verbose = True):
 
         # param
         self.lambda_val = lambda_val
+        self.verbose = verbose
 
         # estimated param
         self.w_c = 0
@@ -24,8 +25,7 @@ class CentralizedSVM():
         self.tpr = 0
         self.roc_auc = 0
         self.cm = 0
-
-    def train(self, x_train, y_train):
+    def fit(self, x_train, y_train):
 
         # Params
         m = x_train.shape[0]
@@ -45,7 +45,7 @@ class CentralizedSVM():
         prob = cp.Problem(cp.Minimize(loss / m + self.lambda_val * reg))
 
         # Solver
-        prob.solve(solver=cp.ECOS, verbose=True)
+        prob.solve(solver=cp.ECOS, verbose= self.verbose)
         self.w_c = x_v.value[:n]
         self.b_c = x_v.value[-1]
 
@@ -56,9 +56,9 @@ class CentralizedSVM():
         # Prediction
         self.w_c = self.w_c.reshape(-1, 1)
         y_pred = np.sign(np.dot(x_test, self.w_c) + self.b_c)
-        self.accuracy = accuracy_score(y_test, y_pred)
 
         # Save metrics
+        self.accuracy = accuracy_score(y_test, y_pred)
         self.fpr, self.tpr, _ = roc_curve(y_test, y_pred)
         self.roc_auc = auc(self.fpr, self.tpr)
         self.cm = confusion_matrix(y_test, y_pred)
