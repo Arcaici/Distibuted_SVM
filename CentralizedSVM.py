@@ -35,8 +35,6 @@ class CentralizedSVM():
 
         # Cost function and variables
         A = np.hstack((x_train * y_train_reshaped.T, y_train_reshaped.T))
-        print(A)
-        print(type(A))
         C = np.identity(n + 1)
         C[n, n] = 0
         x_v = cp.Variable((n + 1, 1))
