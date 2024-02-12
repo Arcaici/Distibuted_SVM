@@ -24,28 +24,32 @@ def centralized_grid_search(lambda_values, x_train, y_train, x_val, y_val):
 
     return best_lambda, best_score
 
-def distributed_grid_search(rho_values, lambda_val, x_train, y_train, x_val, y_val):
+def distributed_grid_search(rho_values, lambda_val, x_train, y_train, x_val, y_val, early_stopping = False):
     best_rho = None
     best_score = -1
+    max_iter = {}
     scores = {}
     loss_convergence = {}
 
     for rho in rho_values:
-
-        model = DistributedSVM(rho=rho,lambda_val=lambda_val, verbose=False)
+        if early_stopping:
+            model = DistributedSVM(rho=rho,lambda_val=lambda_val, verbose=False, early_stopping=True)
+        else:
+            model = DistributedSVM(rho=rho,lambda_val=lambda_val, verbose=False)
         model.fit(x_train, y_train)
         model.predict(x_val, y_val)
         score = model.accuracy
+        max_iter[f'{rho}'] = model.iter
         scores[f'{rho}'] = score
         loss_convergence[f'{rho}'] = model.LOSS[:,0]
 
         if score > best_score:
             best_score = score
-            best_rho = lambda_val
+            best_rho = rho
 
         print(f'done validation of rho: {rho}')
 
-    return best_rho, best_score, loss_convergence, scores
+    return best_rho, best_score, loss_convergence, scores, max_iter
 
 pd.set_option('display.max_columns', None)
 
@@ -81,7 +85,7 @@ svm_cen.metrics()
 
 # Perform grid search on the dataset for different rho values in Distributed version
 rho_values = [0.01, 0.1, 0.3, 0.5, 0.7, 0.9]
-best_rho, best_score_d, loss_convergence, scores= distributed_grid_search(rho_values, best_lambda, x_train_g, y_train_g, x_val, y_val)
+best_rho, best_score_d, loss_convergence, scores, iter = distributed_grid_search(rho_values, best_lambda, x_train_g, y_train_g, x_val, y_val)
 
 print("best_rho: " ,best_rho)
 print("best_score: ", best_score_d)
@@ -96,6 +100,29 @@ plt.title('Loss convergence for each model with different rho')
 plt.legend()
 plt.show()
 
+# Perform grid search with early_stopping Distributed version
+rho_values = [0.01, 0.1, 0.3, 0.5, 0.7, 0.9]
+best_rho, best_score_d, loss_convergence, scores, iter= distributed_grid_search(rho_values, best_lambda, x_train_g, y_train_g, x_val, y_val, early_stopping=True)
+
+print("best_rho: " ,best_rho)
+print("best_score: ", best_score_d)
+
+# Plot Loss convergence and scores
+for (rho_1, loss), (rho_2, score) in zip(loss_convergence.items(), scores.items()):
+    plt.plot(loss, label=f'rho: {rho_1} score: {score}')
+
+plt.xlabel('X-axis')
+plt.ylabel('Y-axis')
+plt.title('Loss convergence for each model with different rho')
+plt.legend()
+plt.show()
+
+# iteration for convergence based on stopping criteria
+plt.bar(list(iter.keys()), list(iter.values()))
+plt.xlabel('rho')
+plt.ylabel('iter convergence')
+plt.title('Bar Plot of Dictionary')
+plt.show()
 
 # Best Distributed SVM model
 svm_dist = DistributedSVM(rho=best_rho,lambda_val=best_lambda, verbose=False)

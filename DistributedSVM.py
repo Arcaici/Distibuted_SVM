@@ -9,13 +9,16 @@ import matplotlib.pyplot as plt
 
 class DistributedSVM():
 
-    def __init__(self,N=20, n_iter=500, rho= 1, lambda_val = 1e-2, verbose = True):
+    def __init__(self,N=20, n_iter=500, rho= 1, lambda_val = 1e-2, early_stopping = False, abs_toll= 0.00001, rel_toll = 0.001, verbose = True):
 
         # param
         self.N = N
         self.n_iter = n_iter
         self.rho = rho
         self.lambda_val = lambda_val
+        self.early_stopping = early_stopping
+        self.abs_toll = abs_toll
+        self.rel_toll = rel_toll
         self.verbose = verbose
 
         # estimated param
@@ -23,6 +26,7 @@ class DistributedSVM():
         self.b_c = 0
         self.LOSS = 0
         self.D = 0
+        self.iter = n_iter
 
         # metrics
         self.accuracy = 0
@@ -97,9 +101,24 @@ class DistributedSVM():
             dk = np.sum(np.square(P))
             self.D = np.append(self.D, dk)
 
+            # stopping criteria
+            if self.early_stopping:
+
+                # Calculate dual error
+                r_t = np.linalg.norm(mean_X - Z[k + 1, :])
+                s_t = np.linalg.norm( - self.rho * (Z[k, :] - Z[k + 1, :]))
+                tol_prim = np.sqrt(n) * self.abs_toll + self.rel_toll * max(np.linalg.norm(mean_X), np.linalg.norm(-Z[k + 1, :]))
+                tol_dual = np.sqrt(n) * self.abs_toll + self.rel_toll * np.linalg.norm(self.rho * mean_U)
+
+                # Check stopping criteria
+                if r_t < tol_prim and s_t < tol_dual:
+                    self.iter = k+1
+                    break
+
+
         print("#________ DONE TRAIN Distributed________#")
-        self.w_c = X[self.n_iter-1,1,:n]
-        self.b_c = X[self.n_iter-1,1,-1]
+        self.w_c = X[self.iter-1,1,:n]
+        self.b_c = X[self.iter-1,1,-1]
 
     def predict(self, x_test, y_test):
 
