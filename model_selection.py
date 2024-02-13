@@ -94,15 +94,14 @@ print("best_score: ", best_score_d)
 for (rho_1, loss), (rho_2, score) in zip(loss_convergence.items(), scores.items()):
     plt.plot(loss, label=f'rho: {rho_1} score: {score}')
 
-plt.xlabel('X-axis')
-plt.ylabel('Y-axis')
+plt.xlabel('Iterations')
+plt.ylabel('Loss')
 plt.title('Loss convergence for each model with different rho')
 plt.legend()
 plt.show()
 
 # Perform grid search with early_stopping Distributed version
-rho_values = [0.01, 0.1, 0.3, 0.5, 0.7, 0.9]
-best_rho, best_score_d, loss_convergence, scores, iter= distributed_grid_search(rho_values, best_lambda, x_train_g, y_train_g, x_val, y_val, early_stopping=True)
+best_rho, best_score_d, loss_convergence, scores, iter = distributed_grid_search(rho_values, best_lambda, x_train_g, y_train_g, x_val, y_val, early_stopping=True)
 
 print("best_rho: " ,best_rho)
 print("best_score: ", best_score_d)
@@ -111,21 +110,28 @@ print("best_score: ", best_score_d)
 for (rho_1, loss), (rho_2, score) in zip(loss_convergence.items(), scores.items()):
     plt.plot(loss, label=f'rho: {rho_1} score: {score}')
 
-plt.xlabel('X-axis')
-plt.ylabel('Y-axis')
-plt.title('Loss convergence for each model with different rho')
+plt.xlabel('Iterations')
+plt.ylabel('Loss')
+plt.title('Loss convergence with different rho using stopping criteria')
 plt.legend()
 plt.show()
 
 # iteration for convergence based on stopping criteria
-plt.bar(list(iter.keys()), list(iter.values()))
+for (rho_1, it), (rho_2, score) in zip(iter.items(), scores.items()):
+    plt.bar(rho_1, it, label=f'rho: {rho_2} score: {score}')
+
+for i, v in enumerate(iter.values()):
+    plt.text(i, v + 0.1, f"{v:.2f}", ha='center', va='bottom')
+
+# Add legend using zip to combine labels and values
+plt.legend()
 plt.xlabel('rho')
 plt.ylabel('iter convergence')
-plt.title('Bar Plot of Dictionary')
+plt.title('Models iteration to convergence')
 plt.show()
 
 # Best Distributed SVM model
-svm_dist = DistributedSVM(rho=best_rho,lambda_val=best_lambda, verbose=False)
+svm_dist = DistributedSVM(rho=best_rho,lambda_val=best_lambda, verbose=False, early_stopping= True)
 svm_dist.fit(x_train, y_train)
 svm_dist.predict(x_test, y_test)
 svm_dist.test_metrics()
