@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 class DistributedSVM():
 
-    def __init__(self,N=20, n_iter=500, rho= 1, lambda_val = 1e-2, early_stopping = False, abs_toll= 0.00001, rel_toll = 0.0001, verbose = True):
+    def __init__(self,N=20, n_iter=500, rho= 1, lambda_val = 1e-2, early_stopping = False, abs_toll= 0.00001, rel_toll = 0.0001, verbose = True, real= True):
 
         # param
         self.N = N
@@ -20,6 +20,7 @@ class DistributedSVM():
         self.abs_toll = abs_toll
         self.rel_toll = rel_toll
         self.verbose = verbose
+        self.real = real
 
         # estimated param
         self.w_c = 0
@@ -40,8 +41,12 @@ class DistributedSVM():
         # Params
         m = x_train.shape[0]
         n = x_train.shape[1]
-        y_train_np = y_train.values
-        y_train_reshaped = y_train_np.reshape(1, -1)
+
+        if self.real:
+            y_train_np = y_train.values
+            y_train_reshaped = y_train_np.reshape(1, -1)
+        else:
+            y_train_reshaped = y_train.T
 
         # Cost function Variables
         A = np.hstack((x_train * y_train_reshaped.T, y_train_reshaped.T))

@@ -9,11 +9,12 @@ import matplotlib.pyplot as plt
 
 class CentralizedSVM():
 
-    def __init__(self, lambda_val = 1e-2, verbose = True):
+    def __init__(self, lambda_val = 1e-2, verbose = True, real= True):
 
         # param
         self.lambda_val = lambda_val
         self.verbose = verbose
+        self.real = real
 
         # estimated param
         self.w_c = 0
@@ -30,8 +31,12 @@ class CentralizedSVM():
         # Params
         m = x_train.shape[0]
         n = x_train.shape[1]
-        y_train_np = y_train.values
-        y_train_reshaped = y_train_np.reshape(1, -1)
+
+        if self.real:
+            y_train_np = y_train.values
+            y_train_reshaped = y_train_np.reshape(1, -1)
+        else:
+            y_train_reshaped = y_train.T
 
         # Cost function and variables
         A = np.hstack((x_train * y_train_reshaped.T, y_train_reshaped.T))
@@ -66,7 +71,6 @@ class CentralizedSVM():
 
         #Accuracy
         print("Accuracy (Centralized):", self.accuracy)
-
         # ROC and AUC
         print("AUC (Centralized):", self.roc_auc)
         plt.figure()
