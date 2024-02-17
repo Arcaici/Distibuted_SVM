@@ -1,9 +1,7 @@
 import numpy as np
 import math
 import seaborn as sns
-import pandas as pd
 import cvxpy as cp
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, roc_curve, auc, confusion_matrix
 import matplotlib.pyplot as plt
 
@@ -57,7 +55,6 @@ class DistributedSVM():
         self.LOSS = np.zeros((self.n_iter, self.N))
         self.D = 0
         for k in range(0, self.n_iter - 1, 1):
-
             # Step 1
             count = 0
             for i in range(self.N):
@@ -73,9 +70,7 @@ class DistributedSVM():
                     if cost > 0:
                         self.LOSS[k + 1, i] += cost
                 self.LOSS[k + 1, i] += self.rho / 2 * np.linalg.norm(X[k + 1, i, :] - Z[k, :] + U[k, i, :]) ** 2
-
                 count += n_samples
-
             # Step 2
             mean_X = np.zeros(n + 1)
             mean_U = np.zeros(n + 1)
@@ -84,7 +79,6 @@ class DistributedSVM():
                 mean_U += U[k, i, :]
             mean_X = 1 / self.N * mean_X
             mean_U = 1 / self.N * mean_U
-
             for i in range(n + 1 - 1):
                 if mean_X[i] + mean_U[i] > self.lambda_val / (self.N * self.rho):
                     Z[k + 1, i] = mean_X[i] + mean_U[i] - self.lambda_val / (self.N * self.rho)
@@ -93,7 +87,6 @@ class DistributedSVM():
                 else:
                     Z[k + 1, i] = 0
             Z[k + 1, n] = mean_X[n] + mean_U[n]
-
             # Step 3
             for i in range(self.N):
                 U[k + 1, i, :] = U[k, i, :] + X[k + 1, i, :] - Z[k + 1, :]
