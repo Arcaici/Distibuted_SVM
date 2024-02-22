@@ -42,4 +42,4 @@ The performance of the centralized and distributed models is compared using vari
     <img src="https://github.com/Arcaici/Distibuted_SVM/blob/master/images/Final%20Results/Accuracy_comparison.png" alt="Centralized and Distributed ROC models comparison" width="400" />
 </div>
 
-For further information check the complete guide [here]()
+For further information check the complete guide [here](https://github.com/Arcaici/Distibuted_SVM/blob/master/Docs/ADMM_SVM.pdf)
